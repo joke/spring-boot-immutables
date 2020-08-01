@@ -1,0 +1,6 @@
+= Spring boot setup
+
+* No spring boot plugin
+* Gradle native dependency management using `platform`
+* jib plugin
+* git properties

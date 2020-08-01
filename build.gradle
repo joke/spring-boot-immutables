@@ -1,0 +1,71 @@
+plugins {
+    id 'java'
+    id 'application'
+    id 'com.google.cloud.tools.jib' version '2.4.0'
+    id 'com.gorylenko.gradle-git-properties' version '2.2.3'
+    id 'io.freefair.git-version' version '5.1.0'
+}
+
+group = 'io.github.joke.demo'
+sourceCompatibility = '14'
+
+repositories {
+    mavenCentral()
+}
+
+application {
+    mainClassName = 'io.github.joke.demo.springbootsetup.Application'
+}
+
+configurations {
+    developmentRuntime.extendsFrom runtimeClasspath
+}
+
+dependencies {
+    annotationProcessor platform('org.springframework.boot:spring-boot-dependencies:2.3.2.RELEASE')
+    annotationProcessor 'org.springframework.boot:spring-boot-configuration-processor'
+    annotationProcessor 'org.springframework.boot:spring-boot-autoconfigure-processor'
+
+    implementation platform('org.springframework.boot:spring-boot-dependencies:2.3.2.RELEASE')
+    implementation 'org.springframework.boot:spring-boot-starter-web'
+
+    developmentRuntime 'org.springframework.boot:spring-boot-devtools'
+
+    testImplementation('org.springframework.boot:spring-boot-starter-test') {
+        exclude group: 'org.junit.vintage', module: 'junit-vintage-engine'
+    }
+}
+
+tasks.withType(JavaCompile) {
+    options.compilerArgs += ['-parameters', '-Werror']
+    options.incremental true
+    options.deprecation true
+    options.warnings true
+}
+
+run {
+    jvmArgs = ['-XX:TieredStopAtLevel=1',
+               '-Ddebug',
+               '-Dcom.sun.management.jmxremote',
+               '-Dspring.liveBeansView.mbeanDomain',
+               '-Dspring.profiles.active=dev',
+               '-Dspring.output.ansi.enabled=always',
+               '-Dspring.jmx.enabled=true',
+               '-Dspring.application.admin.enabled=true'
+    ]
+    classpath += configurations.developmentRuntime
+}
+
+test {
+    useJUnitPlatform()
+}
+
+jib {
+    from.image = 'adoptopenjdk:14-jre-hotspot'
+    to.image = 'application'
+}
+
+wrapper {
+    distributionType = 'ALL'
+    gradleVersion = '6.5.1'
+}
